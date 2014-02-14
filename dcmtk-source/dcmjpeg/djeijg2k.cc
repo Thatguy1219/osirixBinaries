@@ -37,7 +37,6 @@
 #include "ofconsol.h"
 #import "Accelerate/Accelerate.h"
 #include "ofconsol.h"
-#include "OPJSupport.h"
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -58,6 +57,7 @@
 
 // KDU support
 #include <CoreServices/CoreServices.h>
+#include "kdu_OsiriXSupport.h"
 extern short Use_kdu_IfAvailable;
 
 // use 16K blocks for temporary storage of compressed JPEG data
@@ -393,6 +393,9 @@ OFCondition DJCompressJP2K::encode(
 {
 	int bitsstored = bitsAllocated;
 	
+    if( samplesPerPixel > 1)
+        bitsstored = bitsAllocated = 8;
+    
 	OFBool isSigned = 0;
 	
 	if( bitsAllocated >= 16)
@@ -437,6 +440,7 @@ OFCondition DJCompressJP2K::encode(
 		bitsstored = bits;
 	}
 	
+	if( Use_kdu_IfAvailable && kdu_available())
 	{
 //		printf( "JP2K KDU-DCMTK-Encode ");
 		
@@ -482,11 +486,8 @@ OFCondition DJCompressJP2K::encode(
             if( processors > 8)
                 processors = 8;
         }
-
-	OPJSupport opj;
 		
-		void *outBuffer = opj.compressJPEG2K( (void*) image_buffer, samplesPerPixel, rows, columns, bitsstored, false, rate, &compressedLength);
-
+		void *outBuffer = kdu_compressJPEG2K( (void*) image_buffer, samplesPerPixel, rows, columns, bitsstored, false, rate, &compressedLength, processors);
 		
 		if( outBuffer)
 		{
