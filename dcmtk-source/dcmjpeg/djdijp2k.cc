@@ -117,13 +117,15 @@ OFCondition DJDecompressJP2k::decode(
                 processors = 8;
         }
 		
-		long decompressedBufferSize = 0;
-		int colorModel;
-
 		OPJSupport opj;
-		opj.decompressJPEG2KWithBuffer( uncompressedFrameBuffer, compressedFrameBuffer, compressedFrameBufferSize, &decompressedBufferSize, &colorModel);
+        j2kInfo info;
+        info.decompressBuffer = uncompressedFrameBuffer;
+        info.jp2Data = compressedFrameBuffer;
+        info.jp2DataSize = compressedFrameBufferSize;
+        
+		opj.decompressJPEG2K( &info);
 		
-		if( colorModel == 1)
+		if( info.isRGB)
 			decompressedColorModel = (EP_Interpretation) EPI_RGB;
 	}
 //	else
